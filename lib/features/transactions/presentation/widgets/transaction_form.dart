@@ -4,7 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../categories/providers/category_providers.dart';
 
 class TransactionForm extends ConsumerStatefulWidget {
-  const TransactionForm({super.key, required this.onSubmit});
+  const TransactionForm({
+    super.key,
+    required this.onSubmit,
+    this.initialTitle,
+    this.initialAmount,
+    this.initialType = 'expense',
+    this.initialCategoryId,
+    this.initialDate,
+    this.initialNote,
+    this.submitLabel = 'Save Transaction',
+  });
 
   final Future<void> Function({
     required String title,
@@ -16,6 +26,14 @@ class TransactionForm extends ConsumerStatefulWidget {
   })
   onSubmit;
 
+  final String? initialTitle;
+  final int? initialAmount;
+  final String initialType;
+  final int? initialCategoryId;
+  final DateTime? initialDate;
+  final String? initialNote;
+  final String submitLabel;
+
   @override
   ConsumerState<TransactionForm> createState() => _TransactionFormState();
 }
@@ -23,15 +41,32 @@ class TransactionForm extends ConsumerStatefulWidget {
 class _TransactionFormState extends ConsumerState<TransactionForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _amountController;
+  late final TextEditingController _noteController;
 
-  String _type = 'expense';
+  late String _type;
   int? _selectedCategoryId;
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
 
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _titleController = TextEditingController(text: widget.initialTitle ?? '');
+
+    _amountController = TextEditingController(
+      text: widget.initialAmount?.toString() ?? '',
+    );
+
+    _noteController = TextEditingController(text: widget.initialNote ?? '');
+
+    _type = widget.initialType;
+    _selectedCategoryId = widget.initialCategoryId;
+    _selectedDate = widget.initialDate ?? DateTime.now();
+  }
 
   @override
   void dispose() {
@@ -285,7 +320,7 @@ class _TransactionFormState extends ConsumerState<TransactionForm> {
                       width: 22,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Save Transaction'),
+                  : Text(widget.submitLabel),
             ),
           ),
         ],

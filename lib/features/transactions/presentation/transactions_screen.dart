@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'add_transaction_screen.dart';
 import '../providers/transaction_providers.dart';
+import 'add_transaction_screen.dart';
+import 'edit_transaction_screen.dart';
 
 class TransactionsScreen extends ConsumerWidget {
   const TransactionsScreen({super.key});
@@ -15,40 +16,17 @@ class TransactionsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Transactions')),
       body: transactionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, size: 48),
-                const SizedBox(height: 16),
-                const Text(
-                  'Something went wrong.',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text('$error', textAlign: TextAlign.center),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: () {
-                    ref.invalidate(transactionsProvider);
-                  },
-                  child: const Text('Try Again'),
-                ),
-              ],
-            ),
-          ),
+        error: (error, stackTrace) => _ErrorState(
+          error: error,
+          onRetry: () {
+            ref.invalidate(transactionsProvider);
+          },
         ),
         data: (transactions) {
           if (transactions.isEmpty) {
             return _EmptyTransactions(
               onAddTransaction: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const AddTransactionScreen(),
-                  ),
-                );
+                _openAddTransaction(context);
               },
             );
           }
@@ -64,7 +42,6 @@ class TransactionsScreen extends ConsumerWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final transaction = transactions[index];
-
                 final isIncome = transaction.type == 'income';
 
                 return Card(
@@ -92,6 +69,9 @@ class TransactionsScreen extends ConsumerWidget {
                         color: isIncome ? Colors.green : Colors.red,
                       ),
                     ),
+                    onTap: () {
+                      _openEditTransaction(context, transaction.id);
+                    },
                   ),
                 );
               },
@@ -101,12 +81,24 @@ class TransactionsScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
-          );
+          _openAddTransaction(context);
         },
         icon: const Icon(Icons.add),
         label: const Text('Add'),
+      ),
+    );
+  }
+
+  void _openAddTransaction(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddTransactionScreen()));
+  }
+
+  void _openEditTransaction(BuildContext context, int transactionId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => EditTransactionScreen(transactionId: transactionId),
       ),
     );
   }
@@ -143,6 +135,37 @@ class _EmptyTransactions extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Add Transaction'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, size: 48),
+            const SizedBox(height: 16),
+            const Text(
+              'Something went wrong.',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('$error', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton(onPressed: onRetry, child: const Text('Try Again')),
           ],
         ),
       ),

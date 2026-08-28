@@ -14,3 +14,12 @@ final transactionsProvider = FutureProvider((ref) async {
 
   return repository.getAllTransactions();
 });
+
+final transactionByIdProvider = FutureProvider.family((
+  ref,
+  int transactionId,
+) async {
+  final repository = ref.watch(transactionRepositoryProvider);
+
+  return repository.getTransactionById(transactionId);
+});
