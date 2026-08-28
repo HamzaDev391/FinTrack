@@ -1,0 +1,428 @@
+FinTrack — Progress Checkpoint
+
+You're right: we're probably well under 5% complete in terms of the actual application. That's fine. The important thing is that the foundation isn't being improvised as we go.
+
+1. What FinTrack is
+
+FinTrack is a portfolio-focused personal finance application.
+
+Its purpose is to demonstrate that you can build a serious Flutter application involving:
+
+Flutter/Dart
+Riverpod
+Local persistence
+SQLite/Drift
+CRUD
+relational data
+business logic
+search/filtering
+charts
+navigation
+validation
+professional UI/UX
+error/loading/empty states
+
+It is not intended to become a fintech product or startup.
+
+That's an important constraint we'll keep enforcing.
+
+2. V1 scope is locked
+
+We've already decided what belongs in V1.
+
+Core features
+Dashboard
+Transactions
+Categories
+Budgets
+Statistics
+Settings
+Transactions
+Create
+Read
+Update
+Delete
+
+Search
+Filter
+Sort
+Categories
+Default categories
+Custom categories
+Create
+Edit
+Delete
+Safe deletion
+Budgets
+Monthly category budgets
+Create
+Edit
+Delete
+Spending calculation
+Progress
+Statistics
+Expense breakdown
+Monthly income vs expense
+Category rankings
+Month selection
+Settings
+Theme
+Currency
+Clear data
+
+And we've explicitly rejected:
+
+Authentication
+Cloud sync
+Bank APIs
+Payments
+AI
+Receipt scanning
+Family accounts
+Notifications
+Social features
+
+That's good scope discipline.
+
+3. Architecture decision
+
+We've settled on:
+
+Feature-first
++
+lightweight shared core
++
+repository pattern
++
+Riverpod
++
+Drift
+
+The overall data flow is:
+
+                 ┌──────────────┐
+                 │     UI       │
+                 └──────┬───────┘
+                        ↓
+                 ┌──────────────┐
+                 │   Riverpod   │
+                 └──────┬───────┘
+                        ↓
+                 ┌──────────────┐
+                 │ Repository   │
+                 └──────┬───────┘
+                        ↓
+                 ┌──────────────┐
+                 │    Drift     │
+                 └──────┬───────┘
+                        ↓
+                 ┌──────────────┐
+                 │   SQLite     │
+                 └──────────────┘
+
+The database is the source of truth.
+
+That's probably the single most important architectural principle we'll maintain throughout the project.
+
+4. Database design is already conceptually defined
+
+We have three major relational tables.
+
+Categories
+categories
+──────────
+id
+name
+type
+icon
+isDefault
+Transactions
+transactions
+────────────
+id
+title
+amount
+type
+categoryId
+date
+note
+createdAt
+
+Relationship:
+
+Category 1 ──────── * Transaction
+Budgets
+budgets
+───────
+id
+categoryId
+amount
+month
+year
+createdAt
+
+Relationship:
+
+Category 1 ──────── * Budget
+
+And:
+
+(categoryId, month, year)
+
+must be unique.
+
+That's already enough to demonstrate meaningful relational database design.
+
+5. Preferences are separate
+
+We intentionally decided not to put everything into SQLite.
+
+Structured financial information:
+
+SQLite / Drift
+
+Simple preferences:
+
+SharedPreferences
+
+For example:
+
+themeMode
+currency
+
+That's a small but legitimate example of choosing the right persistence mechanism for the job.
+
+6. Project structure
+
+We've chosen:
+
+lib/
+├── app/
+│   ├── app.dart
+│   ├── router.dart
+│   └── theme/
+│       ├── app_theme.dart
+│       ├── light_theme.dart
+│       └── dark_theme.dart
+│
+├── core/
+│   ├── database/
+│   │   └── app_database.dart
+│   ├── constants/
+│   └── utils/
+│
+├── features/
+│   ├── dashboard/
+│   │   ├── presentation/
+│   │   └── providers/
+│   │
+│   ├── transactions/
+│   │   ├── data/
+│   │   ├── presentation/
+│   │   └── providers/
+│   │
+│   ├── categories/
+│   │   ├── data/
+│   │   ├── presentation/
+│   │   └── providers/
+│   │
+│   ├── budgets/
+│   │   ├── data/
+│   │   ├── presentation/
+│   │   └── providers/
+│   │
+│   ├── statistics/
+│   │   ├── presentation/
+│   │   └── providers/
+│   │
+│   └── settings/
+│       ├── presentation/
+│       └── providers/
+│
+└── main.dart
+
+And we've deliberately not introduced a domain/ layer.
+
+Why?
+
+Because at this project's size, adding:
+
+entities
+use cases
+interfaces
+datasources
+mappers
+services
+
+would mostly create ceremony.
+
+If we encounter a genuine reason for another layer, we'll add it.
+
+7. The actual project exists
+
+We've created:
+
+~/Projects/Flutter/fin_track
+
+And we've created the architectural directory skeleton.
+
+We've also created the initial known Dart files, including:
+
+main.dart
+app.dart
+router.dart
+
+app_theme.dart
+light_theme.dart
+dark_theme.dart
+
+app_database.dart
+
+dashboard_screen.dart
+
+transactions_screen.dart
+add_transaction_screen.dart
+transaction_repository.dart
+
+category_repository.dart
+
+budget_repository.dart
+
+Some of those files are currently just skeletons.
+
+That's intentional.
+
+8. Dependencies are selected
+
+Our current core stack is:
+
+Flutter
+Dart
+    │
+    ├── Riverpod
+    ├── go_router
+    ├── Drift
+    ├── SQLite
+    ├── SharedPreferences
+    └── path/path_provider
+
+And development tooling includes:
+
+drift_dev
+build_runner
+
+We haven't chosen the chart library yet.
+
+That's fine.
+
+There's no reason to add a package today for something we won't implement until much later.
+
+9. What we have NOT done
+
+This is important because it keeps our progress realistic.
+
+We currently do not have:
+
+working navigation
+working Riverpod state
+working database
+database tables
+CRUD
+forms
+transaction logic
+dashboard calculations
+budgets
+charts
+search
+filtering
+settings persistence
+polished UI
+
+So if we called FinTrack "5% complete," that would be generous.
+
+I'd consider the actual application implementation closer to 1–3%.
+
+But that's not a problem.
+
+We've spent this time making the initial decisions that prevent us from repeatedly restructuring the project later.
+
+10. What happens next
+
+This is where the process changes.
+
+No more broad architecture discussion unless we hit an actual architectural problem.
+
+We're now entering:
+
+Implementation mode.
+
+Our immediate sequence is:
+
+main.dart
+    ↓
+app.dart
+    ↓
+theme
+    ↓
+go_router
+    ↓
+navigation shell
+    ↓
+placeholder screens
+
+Then:
+
+Drift
+    ↓
+database tables
+    ↓
+relationships
+    ↓
+generated code
+    ↓
+seed categories
+
+Then the real application begins:
+
+Transactions
+    ↓
+Repository
+    ↓
+Riverpod
+    ↓
+CRUD
+    ↓
+Forms
+    ↓
+Persistence
+
+And from there, we're mostly building rather than planning.
+
+Our current status
+
+I'd summarize FinTrack like this:
+
+Area	Status
+Product definition	✅ Locked
+V1 scope	✅ Locked
+Architecture	✅ Decided
+Database design	✅ Designed
+Project created	✅
+Folder structure	✅
+Initial files	✅
+Dependencies	✅ Selected
+App shell	⏳
+Navigation	⏳
+Database implementation	⏳
+Transactions	⏳
+Everything else	⏳
+
+So yes — we've done very little actual coding.
+
+And that's exactly where I want us to stop planning.
+
+Next: main.dart
+
+We'll take the first generated Flutter code and turn it into the actual FinTrack application entry point.
+
+And this time, we'll learn Riverpod, MaterialApp, theme configuration, etc. exactly when we encounter them, rather than studying them beforehand.

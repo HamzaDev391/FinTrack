@@ -1,0 +1,501 @@
+🔒 FINTRACK CHECKPOINT — August 27, 2026
+
+This is the state I want us to treat as our official checkpoint.
+
+Overall functional progress
+≈ 15% complete
+
+Again, this isn't a code-line percentage.
+
+We've built a strong foundation, but the majority of FinTrack's actual functionality still has to be implemented.
+
+✅ COMPLETED
+1. Project foundation
+
+FinTrack Flutter project exists under:
+
+~/Projects/Flutter/fin_track
+
+We established the feature-oriented project structure.
+
+The project is organized around:
+
+app/
+core/
+features/
+
+rather than an unnecessarily complex enterprise architecture.
+
+2. App foundation
+
+Implemented:
+
+Flutter application entry point
+Riverpod ProviderScope
+Material 3 foundation
+App theme structure
+Light/dark theme foundation
+go_router
+Navigation shell
+Bottom navigation foundation
+
+The app has the basic application skeleton.
+
+3. Routing foundation
+
+Current meaningful routes include:
+
+/
+ /transactions
+ /budgets
+ /categories
+
+And we have placeholders planned for:
+
+/statistics
+/settings
+
+The latter aren't implemented yet.
+
+4. Database architecture
+
+This is the biggest accomplishment so far.
+
+We chose:
+
+Drift
+  ↓
+SQLite
+
+and created the actual database.
+
+Database files
+lib/core/database/
+├── app_database.dart
+├── app_database.g.dart       ← generated
+├── database_connection.dart
+├── database_initializer.dart
+└── database_provider.dart
+5. Database tables
+Categories
+
+Implemented:
+
+id
+name
+type
+icon
+isDefault
+Transactions
+
+Implemented:
+
+id
+title
+amount
+type
+categoryId
+date
+note
+createdAt
+
+with:
+
+categoryId → categories.id
+Budgets
+
+Implemented:
+
+id
+categoryId
+amount
+month
+year
+createdAt
+
+with:
+
+categoryId → categories.id
+
+and:
+
+UNIQUE(categoryId, month, year)
+
+This prevents duplicate monthly budgets for the same category.
+
+6. Financial amount representation
+
+We made an intentional architectural decision:
+
+Store monetary amounts as integers representing the smallest currency unit rather than using double.
+
+This avoids common floating-point precision problems.
+
+We'll handle formatting/conversion when we build the transaction UI.
+
+7. Database connection
+
+Implemented:
+
+AppDatabase
+    ↓
+LazyDatabase
+    ↓
+Application documents directory
+    ↓
+fintrack.sqlite
+    ↓
+SQLite
+
+The database is persistent.
+
+It isn't just an in-memory demo.
+
+8. Repository layer
+
+Started implementing repositories.
+
+CategoryRepository
+
+Currently supports:
+
+getAllCategories()
+getCategoriesByType()
+createCategory()
+updateCategory()
+deleteCategory()
+getTransactionCount()
+TransactionRepository
+
+Currently supports:
+
+getAllTransactions()
+getTransactionById()
+createTransaction()
+updateTransaction()
+deleteTransaction()
+
+So the CRUD infrastructure exists.
+
+But it isn't connected to a real transaction UI yet.
+
+That's important.
+
+9. Riverpod architecture
+
+We established:
+
+Provider
+ ↓
+Repository
+ ↓
+Database
+
+For example:
+
+categoriesProvider
+        ↓
+categoryRepositoryProvider
+        ↓
+databaseProvider
+        ↓
+AppDatabase
+        ↓
+SQLite
+
+We also established the database initialization dependency:
+
+categoriesProvider
+        ↓
+databaseInitializerProvider
+        ↓
+seedDefaultCategories()
+        ↓
+SQLite
+10. Default category seeding
+
+Implemented automatic default categories.
+
+Expense
+Food
+Transport
+Shopping
+Bills
+Entertainment
+Health
+Education
+Other
+Income
+Salary
+Freelance
+Business
+Gift
+Investment
+Other
+
+Total:
+
+14 categories
+
+And you have personally verified that all 14 appear in the app.
+
+That means our first real database → UI pipeline has been proven.
+
+11. First real data flow proven
+
+This is the most important checkpoint.
+
+We have successfully demonstrated:
+
+SQLite
+ ↓
+Drift
+ ↓
+Repository
+ ↓
+Riverpod
+ ↓
+Flutter Widget
+ ↓
+14 categories displayed
+
+So we're no longer theorizing about our architecture.
+
+It actually works.
+
+🟡 PARTIALLY COMPLETED
+Transactions
+
+Database table:
+
+✅
+
+Repository:
+
+✅
+
+Riverpod foundation:
+
+❌ Not yet created
+
+Transaction list UI:
+
+❌
+
+Add transaction:
+
+❌
+
+Edit transaction:
+
+❌
+
+Delete transaction:
+
+❌
+
+Validation:
+
+❌
+
+Categories
+
+Database:
+
+✅
+
+Default categories:
+
+✅
+
+Read:
+
+✅
+
+Repository CRUD:
+
+✅
+
+Category management UI:
+
+❌
+
+Create custom category:
+
+❌
+
+Edit:
+
+❌
+
+Safe deletion:
+
+❌
+
+Budgets
+
+Database:
+
+✅
+
+Repository:
+
+❌
+
+Providers:
+
+❌
+
+UI:
+
+❌
+
+Calculations:
+
+❌
+
+❌ NOT IMPLEMENTED YET
+Dashboard
+
+❌ Balance calculation
+
+❌ Monthly income
+
+❌ Monthly expenses
+
+❌ Recent transactions
+
+❌ Spending overview
+
+Transactions
+
+❌ Add form
+
+❌ Edit form
+
+❌ Delete workflow
+
+❌ Search
+
+❌ Filtering
+
+❌ Sorting
+
+❌ Date range
+
+Categories
+
+❌ Category management UI
+
+❌ Safe-delete workflow
+
+Budgets
+
+❌ Create
+
+❌ Edit
+
+❌ Delete
+
+❌ Spending calculation
+
+❌ Progress indicators
+
+Statistics
+
+❌ Expense breakdown
+
+❌ Donut/pie chart
+
+❌ Monthly comparison
+
+❌ Bar chart
+
+❌ Category rankings
+
+❌ Month selection
+
+Settings
+
+❌ Theme persistence
+
+❌ Currency preference
+
+❌ Clear-all-data workflow
+
+❌ NOT DONE — QUALITY PASS
+
+These come after functionality:
+
+Loading states
+Empty states
+Error states
+Validation refinement
+Confirmation dialogs
+Responsive layouts
+Dark-mode refinement
+Animations
+Visual polish
+Typography
+Spacing
+Charts styling
+Accessibility review
+README
+Screenshots
+Portfolio presentation
+🚫 Explicitly OUT OF SCOPE
+
+Still locked out:
+
+Authentication
+Cloud sync
+Backend
+Supabase
+Bank APIs
+Payments
+Currency conversion
+Multiple wallets
+Family accounts
+Notifications
+Receipt scanning
+AI
+Social features
+Web/Desktop
+
+We're not adding any of that.
+
+Where we start next time
+
+We don't need another planning session.
+
+We go directly into:
+
+TRANSACTION VERTICAL SLICE
+
+Our next implementation sequence:
+
+Transaction Riverpod provider
+        ↓
+Transactions screen
+        ↓
+Add Transaction screen
+        ↓
+Form fields
+        ↓
+Category selection
+        ↓
+Validation
+        ↓
+Repository
+        ↓
+SQLite
+        ↓
+Refresh transaction list
+
+The first real target will be:
+
+I can open FinTrack, add "Lunch — Rs. 500 — Food — today", close the app, reopen it, and still see that transaction.
+
+Once we achieve that, FinTrack will have its first genuinely useful feature, not just infrastructure.
+
+Checkpoint established.
