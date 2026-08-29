@@ -9,9 +9,7 @@ LazyDatabase openConnection() {
   return LazyDatabase(() async {
     final directory = await getApplicationDocumentsDirectory();
 
-    final file = File(
-      p.join(directory.path, 'fintrack.sqlite'),
-    );
+    final file = File(p.join(directory.path, 'fintrack.sqlite'));
 
     return NativeDatabase.createInBackground(file);
   });
