@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import '../features/statistics/presentation/statistics_screen.dart';
 import '../features/budgets/presentation/budgets_screen.dart';
 import '../features/categories/presentation/categories_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
+import '../features/settings/presentation/settings_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -18,6 +19,12 @@ final appRouter = GoRouter(
           path: '/',
           builder: (context, state) {
             return const DashboardScreen();
+          },
+        ),
+        GoRoute(
+          path: '/statistics',
+          builder: (context, state) {
+            return const StatisticsScreen();
           },
         ),
         GoRoute(
@@ -36,6 +43,12 @@ final appRouter = GoRouter(
           path: '/categories',
           builder: (context, state) {
             return const CategoriesScreen();
+          },
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) {
+            return const SettingsScreen();
           },
         ),
       ],
@@ -108,6 +121,14 @@ class _AppShell extends StatelessWidget {
 
     if (location.startsWith('/budgets')) {
       return 2;
+    }
+
+    if (location.startsWith('/statistics')) {
+      return 3;
+    }
+
+    if (location.startsWith('/settings')) {
+      return 4;
     }
 
     return 0;
