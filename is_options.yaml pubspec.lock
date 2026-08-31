@@ -1,0 +1,56 @@
+[1mdiff --git a/pubspec.lock b/pubspec.lock[m
+[1mindex 4808374..fa68613 100644[m
+[1m--- a/pubspec.lock[m
+[1m+++ b/pubspec.lock[m
+[36m@@ -380,10 +380,10 @@[m [mpackages:[m
+     dependency: transitive[m
+     description:[m
+       name: matcher[m
+[31m-      sha256: dc0b7dc7651697ea4ff3e69ef44b0407ea32c487a39fff6a4004fa585e901861[m
+[32m+[m[32m      sha256: "31bd099b47c10cd1aeb55146a2d46ce0277630ecef3f7dae54ad7873f36696cd"[m
+       url: "https://pub.dev"[m
+     source: hosted[m
+[31m-    version: "0.12.19"[m
+[32m+[m[32m    version: "0.12.20"[m
+   material_color_utilities:[m
+     dependency: transitive[m
+     description:[m
+[36m@@ -396,10 +396,10 @@[m [mpackages:[m
+     dependency: transitive[m
+     description:[m
+       name: meta[m
+[31m-      sha256: "1741988757a65eb6b36abe716829688cf01910bbf91c34354ff7ec1c3de2b349"[m
+[32m+[m[32m      sha256: "307249ce4ff29d58a18e97f6345f539382eb9c9c29ecda628900f31de0443dd9"[m
+       url: "https://pub.dev"[m
+     source: hosted[m
+[31m-    version: "1.18.0"[m
+[32m+[m[32m    version: "1.19.0"[m
+   mime:[m
+     dependency: transitive[m
+     description:[m
+[36m@@ -721,10 +721,10 @@[m [mpackages:[m
+     dependency: transitive[m
+     description:[m
+       name: test_api[m
+[31m-      sha256: "949a932224383300f01be9221c39180316445ecb8e7547f70a41a35bf421fb9e"[m
+[32m+[m[32m      sha256: "2a122cbe059f8b610d3a5415f42e255b6c17b1f21eee1d960f31080237fb4f11"[m
+       url: "https://pub.dev"[m
+     source: hosted[m
+[31m-    version: "0.7.11"[m
+[32m+[m[32m    version: "0.7.12"[m
+   typed_data:[m
+     dependency: transitive[m
+     description:[m
+[36m@@ -737,10 +737,10 @@[m [mpackages:[m
+     dependency: transitive[m
+     description:[m
+       name: vector_math[m
+[31m-      sha256: d530bd74fea330e6e364cda7a85019c434070188383e1cd8d9777ee586914c5b[m
+[32m+[m[32m      sha256: f36f9f3be64c6198714492bb455c11056e33e2f85d9a0b676a48301e44fdcf47[m
+       url: "https://pub.dev"[m
+     source: hosted[m
+[31m-    version: "2.2.0"[m
+[32m+[m[32m    version: "2.4.2"[m
+   vm_service:[m
+     dependency: transitive[m
+     description:[m

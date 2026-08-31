@@ -1,0 +1,859 @@
+# FinTrack — Project Context
+
+## 1. Project Identity
+
+**Project:** FinTrack
+
+**Type:** Flutter mobile application
+
+**Purpose:** Portfolio project demonstrating professional Flutter development.
+
+FinTrack is a **personal finance management application** designed to demonstrate:
+
+* Flutter development
+* Dart
+* State management
+* Local database persistence
+* SQLite
+* Drift
+* Repository architecture
+* CRUD operations
+* Data modeling
+* Search and filtering
+* Sorting
+* Financial calculations
+* Data visualization
+* Navigation
+* Form validation
+* Error/loading/empty states
+* Material 3 UI
+* Local preferences
+* Maintainable feature-oriented architecture
+
+FinTrack is a **portfolio application**, not a production fintech platform.
+
+---
+
+# 2. Project Scope
+
+The application is a local-first personal finance manager.
+
+Users can:
+
+* Record income
+* Record expenses
+* Organize transactions into categories
+* View balance
+* View monthly income
+* View monthly expenses
+* Create monthly category budgets
+* Track budget spending
+* Search transactions
+* Filter transactions
+* Sort transactions
+* View financial statistics
+* View monthly activity
+* Manage application settings
+* Persist financial data locally
+
+---
+
+# 3. Scope Boundaries
+
+The following are intentionally OUT OF SCOPE for V1:
+
+* Authentication
+* Cloud synchronization
+* Backend
+* Supabase
+* PostgreSQL
+* Bank integrations
+* Payment systems
+* Live currency conversion
+* Multiple wallets/accounts
+* Shared/family finances
+* Notifications
+* Receipt scanning
+* AI financial advice
+* Social features
+* Web support
+* Desktop support
+
+FinTrack is intended to remain a **small, complete, polished Flutter application** rather than an enterprise or startup-scale system.
+
+---
+
+# 4. Technology Stack
+
+## Framework
+
+Flutter
+
+## Language
+
+Dart
+
+## State Management
+
+`flutter_riverpod`
+
+## Database
+
+Drift
+
+SQLite
+
+## Routing
+
+`go_router`
+
+## UI
+
+Material 3
+
+## Preferences
+
+SharedPreferences or equivalent lightweight local key-value storage.
+
+## Charts
+
+A suitable Flutter chart package for:
+
+* Donut/pie charts
+* Bar charts
+
+## Icons
+
+Material Symbols / Material Icons.
+
+---
+
+# 5. Architecture
+
+The main application data flow is:
+
+```text
+Flutter UI
+    ↓
+Riverpod
+    ↓
+Repository
+    ↓
+Drift
+    ↓
+SQLite
+```
+
+The UI should not directly communicate with the database.
+
+Repositories encapsulate database operations.
+
+Riverpod manages application state and exposes data to presentation layers.
+
+Drift handles structured local persistence.
+
+Simple application preferences such as theme and currency do not require database tables.
+
+---
+
+# 6. Project Structure
+
+The project uses a **feature-oriented architecture**.
+
+The intended high-level structure is:
+
+```text
+lib/
+├── app/
+│   ├── app.dart
+│   ├── router.dart
+│   └── theme/
+│       ├── app_theme.dart
+│       ├── light_theme.dart
+│       └── dark_theme.dart
+│
+├── core/
+│   ├── database/
+│   │   └── app_database.dart
+│   ├── constants/
+│   └── utils/
+│
+├── features/
+│   ├── dashboard/
+│   ├── transactions/
+│   ├── categories/
+│   ├── budgets/
+│   ├── statistics/
+│   └── settings/
+│
+└── main.dart
+```
+
+The exact current structure and all current source code are contained in:
+
+```text
+fintrack_context.txt
+```
+
+The actual current codebase should be treated as the source of truth if it differs from this conceptual structure.
+
+---
+
+# 7. Database Design
+
+## Categories
+
+```text
+categories
+──────────
+id
+name
+type
+icon
+isDefault
+```
+
+Category types:
+
+```text
+income
+expense
+```
+
+---
+
+## Transactions
+
+```text
+transactions
+────────────
+id
+title
+amount
+type
+categoryId
+date
+note
+createdAt
+```
+
+Transaction types:
+
+```text
+income
+expense
+```
+
+Relationship:
+
+```text
+Category
+    │
+    └────── * Transactions
+```
+
+One category can contain many transactions.
+
+---
+
+## Budgets
+
+```text
+budgets
+───────
+id
+categoryId
+amount
+month
+year
+createdAt
+```
+
+Relationship:
+
+```text
+Category
+    │
+    └────── * Budgets
+```
+
+A category can have multiple budgets across different months.
+
+However, there can only be **one budget for a category in a particular month/year**.
+
+Database constraint:
+
+```text
+UNIQUE(categoryId, month, year)
+```
+
+---
+
+# 8. Money
+
+Financial amounts are represented using integer values rather than floating-point values to avoid unnecessary floating-point precision problems.
+
+Do not casually change financial storage to `double`.
+
+The stored value should be formatted for display according to the selected currency preference.
+
+---
+
+# 9. Default Categories
+
+FinTrack contains 14 default categories.
+
+## Expense Categories
+
+```text
+Food
+Transport
+Shopping
+Bills
+Entertainment
+Health
+Education
+Other
+```
+
+## Income Categories
+
+```text
+Salary
+Freelance
+Business
+Gift
+Investment
+Other
+```
+
+Default categories are seeded into the local database.
+
+The current implementation has successfully demonstrated that the database → repository/state → UI pipeline can retrieve and display all **14 categories**.
+
+---
+
+# 10. Transactions Feature
+
+Transactions are the primary CRUD feature.
+
+A transaction contains:
+
+```text
+id
+title
+amount
+type
+categoryId
+date
+note
+createdAt
+```
+
+The transaction feature supports or is intended to support:
+
+* Create transaction
+* Read transaction history
+* Update transaction
+* Delete transaction
+* Search by title
+* Filter by income/expense
+* Filter by category
+* Filter by date range
+* Sort by newest
+* Sort by oldest
+* Sort by highest amount
+* Sort by lowest amount
+
+Filters should be combinable.
+
+Example:
+
+```text
+Expense
++
+Food
++
+August 2026
+```
+
+---
+
+# 11. Categories Feature
+
+Users can:
+
+* View categories
+* Create custom categories
+* Edit categories
+* Delete categories
+
+Category deletion must account for existing transaction relationships.
+
+A category currently referenced by transactions should not simply be deleted.
+
+The intended V1 behavior is:
+
+```text
+Prevent deletion
++
+Tell the user how many transactions use the category
+```
+
+Default categories should also be handled appropriately so the application's seeded data remains safe.
+
+---
+
+# 12. Budgets Feature
+
+Budgets are monthly budgets associated with expense categories.
+
+A budget contains:
+
+```text
+id
+categoryId
+amount
+month
+year
+createdAt
+```
+
+Users can:
+
+* Create budget
+* Select expense category
+* Set amount
+* Select month
+* Edit budget
+* Delete budget
+* View spending against budget
+* View remaining budget
+* View percentage used
+
+Example:
+
+```text
+Food
+Budget: Rs. 10,000
+
+Spent: Rs. 7,500
+Remaining: Rs. 2,500
+
+75%
+```
+
+Budget spending is calculated from the relevant expense transactions for that category and month.
+
+---
+
+# 13. Dashboard
+
+The Dashboard is intended to show:
+
+* Total balance
+* Monthly income
+* Monthly expenses
+* Recent transactions
+* Monthly spending overview
+* Quick action to add a transaction
+
+Conceptually:
+
+```text
+Dashboard
+│
+├── Total Balance
+├── Monthly Income
+├── Monthly Expenses
+├── Spending Overview
+└── Recent Transactions
+```
+
+---
+
+# 14. Statistics
+
+The Statistics feature is intended to demonstrate financial data visualization.
+
+## Expense Breakdown
+
+A donut/pie chart showing spending distribution by category.
+
+Example:
+
+```text
+Food          35%
+Transport     20%
+Shopping      18%
+Bills         15%
+Other         12%
+```
+
+## Monthly Comparison
+
+A bar chart showing:
+
+```text
+Income vs Expenses
+```
+
+for recent months.
+
+## Category Spending
+
+A ranked list:
+
+```text
+1. Food         Rs. 12,500
+2. Transport    Rs. 7,800
+3. Shopping     Rs. 5,200
+```
+
+Supported time periods:
+
+```text
+This month
+Last month
+Custom month
+```
+
+No unnecessarily complex analytics are required.
+
+---
+
+# 15. Search and Filtering
+
+The Transactions screen should eventually provide:
+
+```text
+[ Search transactions ]
+
+[ All ] [ Income ] [ Expense ]
+
+[ Category ] [ Date ]
+```
+
+Search operates on transaction titles.
+
+Filters can be combined.
+
+Sorting options:
+
+```text
+Newest
+Oldest
+Highest amount
+Lowest amount
+```
+
+Date filtering should support the application's required date-range functionality.
+
+---
+
+# 16. Settings
+
+Settings remain deliberately small.
+
+V1 settings:
+
+```text
+Theme
+Currency
+Clear all data
+```
+
+Theme options:
+
+```text
+Light
+Dark
+System
+```
+
+Currency options:
+
+```text
+PKR (Rs.)
+USD ($)
+EUR (€)
+GBP (£)
+```
+
+Currency is only a **display preference**.
+
+There is no live exchange-rate functionality.
+
+Theme and currency are appropriate candidates for lightweight local key-value storage.
+
+---
+
+# 17. Navigation
+
+The application uses `go_router`.
+
+The intended application areas are:
+
+```text
+/
+ /transactions
+ /transactions/add
+ /transactions/:id
+ /budgets
+ /statistics
+ /settings
+```
+
+The primary application destinations are:
+
+```text
+Home
+Transactions
+Budgets
+Statistics
+Settings
+```
+
+The final navigation presentation may be adjusted based on actual UI testing, particularly because five bottom-navigation destinations can become crowded on smaller devices.
+
+---
+
+# 18. UX Behavior
+
+Major features should eventually support appropriate application states.
+
+## Loading
+
+Display an appropriate loading state while asynchronous data is being retrieved.
+
+## Empty
+
+Example:
+
+```text
+No transactions yet.
+
+Start tracking your finances by
+adding your first transaction.
+
+[Add Transaction]
+```
+
+## Error
+
+Example:
+
+```text
+Something went wrong.
+
+[Try Again]
+```
+
+## Destructive Confirmation
+
+Example:
+
+```text
+Delete this transaction?
+
+[Cancel] [Delete]
+```
+
+These states are part of the intended finished application.
+
+---
+
+# 19. Local-First Behavior
+
+FinTrack does not require an internet connection.
+
+The intended persistence flow is:
+
+```text
+User opens application
+        ↓
+Read SQLite database
+        ↓
+Drift
+        ↓
+Repository
+        ↓
+Riverpod
+        ↓
+UI
+```
+
+For a write operation:
+
+```text
+User input
+    ↓
+Validation
+    ↓
+Application state
+    ↓
+Repository
+    ↓
+Drift
+    ↓
+SQLite
+    ↓
+Updated state
+    ↓
+UI
+```
+
+---
+
+# 20. Development Milestones
+
+The broad intended implementation order is:
+
+```text
+Foundation
+    ↓
+Database
+    ↓
+Transactions
+    ↓
+Dashboard
+    ↓
+Categories
+    ↓
+Budgets
+    ↓
+Search & Filtering
+    ↓
+Statistics
+    ↓
+Settings
+    ↓
+Polish
+```
+
+This is a development roadmap, not a requirement to redesign the project.
+
+---
+
+# 21. Portfolio Objective
+
+FinTrack should provide credible evidence of practical Flutter development ability.
+
+The finished project should demonstrate:
+
+```text
+Flutter
+Dart
+Riverpod
+Drift
+SQLite
+CRUD
+Repository pattern
+Data modeling
+Navigation
+Forms
+Validation
+Search
+Filtering
+Sorting
+Charts
+Local persistence
+Error handling
+Loading states
+Empty states
+Theming
+Responsive UI
+```
+
+The application should be complete and polished without unnecessary complexity.
+
+---
+
+# 22. Current Codebase
+
+The file:
+
+```text
+fintrack_context.txt
+```
+
+contains the current project structure and source-code contents.
+
+It should be read alongside this document when determining the exact current implementation.
+
+The actual code in `fintrack_context.txt` takes precedence over conceptual descriptions in this document when there is a discrepancy.
+
+The current state should be continued rather than recreated from scratch.
+
+---
+
+# 23. Important Existing Milestone
+
+The category persistence pipeline has already been successfully established.
+
+The application has successfully displayed all 14 seeded categories.
+
+Therefore, the following architecture has already been proven in the current project:
+
+```text
+SQLite
+   ↓
+Drift
+   ↓
+Repository
+   ↓
+Riverpod
+   ↓
+Flutter UI
+   ↓
+14 categories displayed
+```
+
+This should be preserved unless the current codebase reveals a concrete reason for modification.
+
+---
+
+# 24. Current Project Source of Truth
+
+For the exact state of the project:
+
+```text
+fintrack_context.txt
+```
+
+contains:
+
+* Directory structure
+* Dart source files
+* `pubspec.yaml`
+* Current implementation
+
+A separate checkpoint document will provide the historical/progress state of the project.
+
+Both should be considered when reconstructing the current state.
+
+---
+
+# 25. Project Philosophy
+
+FinTrack is intentionally:
+
+```text
+Small
+Complete
+Maintainable
+Local-first
+Portfolio-quality
+Flutter-focused
+```
+
+It is intentionally NOT:
+
+```text
+Enterprise-scale
+Cloud-based
+Multi-user
+Production fintech infrastructure
+```
+
+The goal is a complete, understandable application that demonstrates professional Flutter development through real implementation.
