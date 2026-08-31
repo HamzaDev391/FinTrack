@@ -15,6 +15,7 @@ class Budgets extends Table {
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
+  // One budget per category per calendar month.
   @override
   List<Set<Column>> get uniqueKeys => [
     {categoryId, month, year},

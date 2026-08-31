@@ -1,40 +1,50 @@
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
+import 'budget_details.dart';
 
 class BudgetRepository {
   BudgetRepository(this._database);
 
   final AppDatabase _database;
 
-  Future<List<Budget>> getAllBudgets() {
-    return (_database.select(_database.budgets)..orderBy([
-          (budget) =>
-              OrderingTerm(expression: budget.year, mode: OrderingMode.desc),
-          (budget) =>
-              OrderingTerm(expression: budget.month, mode: OrderingMode.desc),
-        ]))
-        .get();
-  }
+  Future<List<BudgetDetails>> getAllBudgets() async {
+    final budgets =
+        await (_database.select(_database.budgets)..orderBy([
+              (budget) => OrderingTerm.desc(budget.year),
+              (budget) => OrderingTerm.desc(budget.month),
+            ]))
+            .get();
 
-  Future<Budget?> getBudgetById(int id) {
-    return (_database.select(
-      _database.budgets,
-    )..where((budget) => budget.id.equals(id))).getSingleOrNull();
-  }
+    if (budgets.isEmpty) {
+      return const [];
+    }
 
-  Future<Budget?> getBudgetForCategoryMonth({
-    required int categoryId,
-    required int month,
-    required int year,
-  }) {
-    return (_database.select(_database.budgets)..where(
-          (budget) =>
-              budget.categoryId.equals(categoryId) &
-              budget.month.equals(month) &
-              budget.year.equals(year),
-        ))
-        .getSingleOrNull();
+    final categories = await _database.select(_database.categories).get();
+
+    final categoryNames = <int, String>{
+      for (final category in categories) category.id: category.name,
+    };
+
+    final result = <BudgetDetails>[];
+
+    for (final budget in budgets) {
+      final spent = await getCategorySpending(
+        categoryId: budget.categoryId,
+        month: budget.month,
+        year: budget.year,
+      );
+
+      result.add(
+        BudgetDetails(
+          budget: budget,
+          categoryName: categoryNames[budget.categoryId] ?? 'Unknown',
+          spent: spent,
+        ),
+      );
+    }
+
+    return result;
   }
 
   Future<int> createBudget({
@@ -61,18 +71,20 @@ class BudgetRepository {
     required int amount,
     required int month,
     required int year,
-  }) {
-    return (_database.update(_database.budgets)
-          ..where((budget) => budget.id.equals(id)))
-        .write(
+  }) async {
+    final updatedRows =
+        await (_database.update(
+          _database.budgets,
+        )..where((budget) => budget.id.equals(id))).write(
           BudgetsCompanion(
             categoryId: Value(categoryId),
             amount: Value(amount),
             month: Value(month),
             year: Value(year),
           ),
-        )
-        .then((updatedRows) => updatedRows > 0);
+        );
+
+    return updatedRows > 0;
   }
 
   Future<int> deleteBudget(int id) {
@@ -98,7 +110,7 @@ class BudgetRepository {
 
     return transactions.fold<int>(
       0,
-      (sum, transaction) => sum + transaction.amount,
+      (total, transaction) => total + transaction.amount,
     );
   }
 }

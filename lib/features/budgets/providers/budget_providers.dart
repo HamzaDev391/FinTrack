@@ -2,41 +2,85 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_initializer.dart';
 import '../../../core/database/database_provider.dart';
+import '../../transactions/providers/transaction_providers.dart';
+import '../data/budget_details.dart';
 import '../data/budget_repository.dart';
 
 final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
-  final database = ref.watch(databaseProvider);
-
-  return BudgetRepository(database);
+  return BudgetRepository(ref.watch(databaseProvider));
 });
 
-final budgetsProvider = FutureProvider((ref) async {
-  await ref.watch(databaseInitializerProvider.future);
+final budgetsNotifierProvider =
+    AsyncNotifierProvider<BudgetsNotifier, List<BudgetDetails>>(
+      BudgetsNotifier.new,
+    );
 
-  final repository = ref.watch(budgetRepositoryProvider);
+class BudgetsNotifier extends AsyncNotifier<List<BudgetDetails>> {
+  @override
+  Future<List<BudgetDetails>> build() async {
+    await ref.watch(databaseInitializerProvider.future);
 
-  return repository.getAllBudgets();
-});
+    // Budget spending depends on expense transactions.
+    ref.watch(transactionsProvider);
 
-final budgetByIdProvider = FutureProvider.family((ref, int budgetId) async {
-  await ref.watch(databaseInitializerProvider.future);
+    final repository = ref.watch(budgetRepositoryProvider);
 
-  final repository = ref.watch(budgetRepositoryProvider);
+    return repository.getAllBudgets();
+  }
 
-  return repository.getBudgetById(budgetId);
-});
+  Future<void> createBudget({
+    required int categoryId,
+    required int amount,
+    required int month,
+    required int year,
+  }) async {
+    final repository = ref.read(budgetRepositoryProvider);
 
-final categorySpendingProvider = FutureProvider.family((
-  ref,
-  ({int categoryId, int month, int year}) params,
-) async {
-  await ref.watch(databaseInitializerProvider.future);
+    await repository.createBudget(
+      categoryId: categoryId,
+      amount: amount,
+      month: month,
+      year: year,
+    );
 
-  final repository = ref.watch(budgetRepositoryProvider);
+    await _reload();
+  }
 
-  return repository.getCategorySpending(
-    categoryId: params.categoryId,
-    month: params.month,
-    year: params.year,
-  );
-});
+  Future<void> updateBudget({
+    required int id,
+    required int categoryId,
+    required int amount,
+    required int month,
+    required int year,
+  }) async {
+    final repository = ref.read(budgetRepositoryProvider);
+
+    await repository.updateBudget(
+      id: id,
+      categoryId: categoryId,
+      amount: amount,
+      month: month,
+      year: year,
+    );
+
+    await _reload();
+  }
+
+  Future<void> deleteBudget(int id) async {
+    final repository = ref.read(budgetRepositoryProvider);
+
+    await repository.deleteBudget(id);
+
+    await _reload();
+  }
+
+  Future<void> refresh() {
+    return _reload();
+  }
+
+  Future<void> _reload() async {
+    final repository = ref.read(budgetRepositoryProvider);
+
+    state = await AsyncValue.guard(repository.getAllBudgets);
+  }
+}
