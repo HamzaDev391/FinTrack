@@ -14,6 +14,12 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+  Future<void> clearAllData() async {
+    await transaction(() async {
+      await delete(budgets).go();
+      await delete(transactions).go();
+    });
+  }
 
   Future<void> seedDefaultCategories() async {
     final existingCategories = await select(categories).get();
