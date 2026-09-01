@@ -7,13 +7,15 @@ class TransactionRepository {
 
   final AppDatabase _database;
 
-  Future<List<Transaction>> getAllTransactions() {
-    return (_database.select(_database.transactions)..orderBy([
-          (transaction) => OrderingTerm(
-            expression: transaction.date,
-            mode: OrderingMode.desc,
-          ),
-        ]))
+  Future<List<Transaction>> getAllTransactions(String currency) {
+    return (_database.select(_database.transactions)
+          ..where((transaction) => transaction.currency.equals(currency))
+          ..orderBy([
+            (transaction) => OrderingTerm(
+              expression: transaction.date,
+              mode: OrderingMode.desc,
+            ),
+          ]))
         .get();
   }
 
@@ -26,6 +28,7 @@ class TransactionRepository {
   Future<int> createTransaction({
     required String title,
     required int amount,
+    required String currency,
     required String type,
     required int categoryId,
     required DateTime date,
@@ -37,6 +40,7 @@ class TransactionRepository {
           TransactionsCompanion.insert(
             title: title,
             amount: amount,
+            currency: Value(currency),
             type: type,
             categoryId: categoryId,
             date: date,

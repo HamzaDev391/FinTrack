@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_initializer.dart';
 import '../../../core/database/database_provider.dart';
+import '../../settings/providers/settings_providers.dart';
 import '../../transactions/providers/transaction_providers.dart';
 import '../data/budget_details.dart';
 import '../data/budget_repository.dart';
@@ -22,15 +23,17 @@ class BudgetsNotifier extends AsyncNotifier<List<BudgetDetails>> {
 
     // Budget spending depends on expense transactions.
     ref.watch(transactionsProvider);
+    final currency = ref.watch(currencyProvider);
 
     final repository = ref.watch(budgetRepositoryProvider);
 
-    return repository.getAllBudgets();
+    return repository.getAllBudgets(currency);
   }
 
   Future<void> createBudget({
     required int categoryId,
     required int amount,
+    required String currency,
     required int month,
     required int year,
   }) async {
@@ -39,6 +42,7 @@ class BudgetsNotifier extends AsyncNotifier<List<BudgetDetails>> {
     await repository.createBudget(
       categoryId: categoryId,
       amount: amount,
+      currency: currency,
       month: month,
       year: year,
     );
@@ -81,6 +85,8 @@ class BudgetsNotifier extends AsyncNotifier<List<BudgetDetails>> {
   Future<void> _reload() async {
     final repository = ref.read(budgetRepositoryProvider);
 
-    state = await AsyncValue.guard(repository.getAllBudgets);
+    final currency = ref.read(currencyProvider);
+
+    state = await AsyncValue.guard(() => repository.getAllBudgets(currency));
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/currency_helper.dart';
 import '../../categories/providers/category_providers.dart';
+import '../../settings/providers/settings_providers.dart';
 import '../../transactions/presentation/add_transaction_screen.dart';
 import '../../transactions/presentation/edit_transaction_screen.dart';
 import '../../transactions/providers/transaction_providers.dart';
@@ -13,6 +15,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(transactionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
+    final currency = ref.watch(currencyProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('FinTrack')),
@@ -171,6 +174,7 @@ class DashboardScreen extends ConsumerWidget {
                 else
                   ...recent.map((transaction) {
                     final isIncome = transaction.type == 'income';
+                    final currencySymbol = getCurrencySymbol(currency);
 
                     String categoryName = 'Unknown';
 
@@ -213,7 +217,7 @@ class DashboardScreen extends ConsumerWidget {
                           '$categoryName • ${_formatDate(transaction.date)}',
                         ),
                         trailing: Text(
-                          '${isIncome ? '+' : '-'} Rs. ${transaction.amount}',
+                          '${isIncome ? '+' : '-'} $currencySymbol ${transaction.amount}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: isIncome
@@ -288,13 +292,16 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
-class _BalanceCard extends StatelessWidget {
+class _BalanceCard extends ConsumerWidget {
   const _BalanceCard({required this.balance});
 
   final int balance;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(currencyProvider);
+    final currencySymbol = getCurrencySymbol(currency);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -307,7 +314,7 @@ class _BalanceCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Rs. $balance',
+              '$currencySymbol $balance',
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -319,7 +326,7 @@ class _BalanceCard extends StatelessWidget {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
+class _SummaryCard extends ConsumerWidget {
   const _SummaryCard({
     required this.title,
     required this.amount,
@@ -331,7 +338,10 @@ class _SummaryCard extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(currencyProvider);
+    final currencySymbol = getCurrencySymbol(currency);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -343,7 +353,7 @@ class _SummaryCard extends StatelessWidget {
             Text(title, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 4),
             Text(
-              'Rs. $amount',
+              '$currencySymbol $amount',
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -355,7 +365,7 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-class _ProgressRow extends StatelessWidget {
+class _ProgressRow extends ConsumerWidget {
   const _ProgressRow({
     required this.label,
     required this.amount,
@@ -367,8 +377,10 @@ class _ProgressRow extends StatelessWidget {
   final int total;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final progress = total == 0 ? 0.0 : amount / total;
+    final currency = ref.watch(currencyProvider);
+    final currencySymbol = getCurrencySymbol(currency);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,7 +390,7 @@ class _ProgressRow extends StatelessWidget {
           children: [
             Text(label),
             Text(
-              'Rs. $amount',
+              '$currencySymbol $amount',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],

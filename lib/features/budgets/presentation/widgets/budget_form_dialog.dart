@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/utils/currency_helper.dart';
+import '../../../settings/providers/settings_providers.dart';
 import 'budget_card.dart';
 
 class BudgetFormData {
@@ -30,17 +33,17 @@ Future<BudgetFormData?> showBudgetFormDialog({
   );
 }
 
-class _BudgetFormDialog extends StatefulWidget {
+class _BudgetFormDialog extends ConsumerStatefulWidget {
   const _BudgetFormDialog({required this.categories, this.budget});
 
   final List<Category> categories;
   final Budget? budget;
 
   @override
-  State<_BudgetFormDialog> createState() => _BudgetFormDialogState();
+  ConsumerState<_BudgetFormDialog> createState() => _BudgetFormDialogState();
 }
 
-class _BudgetFormDialogState extends State<_BudgetFormDialog> {
+class _BudgetFormDialogState extends ConsumerState<_BudgetFormDialog> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _amountController;
@@ -73,6 +76,8 @@ class _BudgetFormDialogState extends State<_BudgetFormDialog> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.budget != null;
+    final currency = ref.watch(currencyProvider);
+    final currencySymbol = getCurrencySymbol(currency);
 
     return AlertDialog(
       title: Text(isEditing ? 'Edit Budget' : 'Add Budget'),
@@ -111,10 +116,10 @@ class _BudgetFormDialogState extends State<_BudgetFormDialog> {
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Monthly Budget',
-                  prefixText: 'Rs. ',
-                  border: OutlineInputBorder(),
+                  prefixText: '$currencySymbol ',
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   final amount = int.tryParse(value?.trim() ?? '');

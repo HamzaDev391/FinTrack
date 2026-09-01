@@ -9,6 +9,8 @@ class Budgets extends Table {
 
   IntColumn get amount => integer()();
 
+  TextColumn get currency => text().withDefault(const Constant('PKR'))();
+
   IntColumn get month => integer()();
 
   IntColumn get year => integer()();
@@ -18,6 +20,6 @@ class Budgets extends Table {
   // One budget per category per calendar month.
   @override
   List<Set<Column>> get uniqueKeys => [
-    {categoryId, month, year},
+    {categoryId, month, year, currency},
   ];
 }

@@ -9,6 +9,8 @@ class Transactions extends Table {
 
   IntColumn get amount => integer()();
 
+  TextColumn get currency => text().withDefault(const Constant('PKR'))();
+
   TextColumn get type => text()();
 
   IntColumn get categoryId => integer().references(Categories, #id)();

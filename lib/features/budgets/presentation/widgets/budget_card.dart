@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/currency_helper.dart';
+import '../../../settings/providers/settings_providers.dart';
 import '../../data/budget_details.dart';
 
 const _monthNames = [
@@ -25,7 +28,7 @@ String monthName(int month) {
   return _monthNames[month - 1];
 }
 
-class BudgetCard extends StatelessWidget {
+class BudgetCard extends ConsumerWidget {
   const BudgetCard({
     super.key,
     required this.details,
@@ -38,9 +41,11 @@ class BudgetCard extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final budget = details.budget;
     final progress = details.progress.clamp(0.0, 1.0);
+    final currency = ref.watch(currencyProvider);
+    final currencySymbol = getCurrencySymbol(currency);
 
     return Card(
       child: Padding(
@@ -80,8 +85,8 @@ class BudgetCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Budget: Rs. ${budget.amount}'),
-                Text('Spent: Rs. ${details.spent}'),
+                Text('Budget: $currencySymbol ${budget.amount}'),
+                Text('Spent: $currencySymbol ${details.spent}'),
               ],
             ),
             const SizedBox(height: 8),
@@ -96,8 +101,8 @@ class BudgetCard extends StatelessWidget {
               children: [
                 Text(
                   details.isOverBudget
-                      ? 'Over budget: Rs. ${details.spent - budget.amount}'
-                      : 'Remaining: Rs. ${details.remaining}',
+                      ? 'Over budget: $currencySymbol ${details.spent - budget.amount}'
+                      : 'Remaining: $currencySymbol ${details.remaining}',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Text(

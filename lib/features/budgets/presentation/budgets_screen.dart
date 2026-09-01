@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../categories/providers/category_providers.dart';
+import '../../settings/providers/settings_providers.dart';
 import '../data/budget_details.dart';
 import '../providers/budget_providers.dart';
 import 'widgets/budget_card.dart';
@@ -90,6 +91,7 @@ class BudgetsScreen extends ConsumerWidget {
           .createBudget(
             categoryId: formData.categoryId,
             amount: formData.amount,
+            currency: ref.read(currencyProvider),
             month: formData.month,
             year: formData.year,
           );

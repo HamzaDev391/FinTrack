@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/currency_helper.dart';
 import '../../categories/providers/category_providers.dart';
+import '../../settings/providers/settings_providers.dart';
 import 'models/transaction_filter.dart';
 import '../providers/transaction_providers.dart';
 import 'add_transaction_screen.dart';
@@ -128,6 +130,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     final transactionsAsync = ref.watch(transactionsProvider);
+    final currencySymbol = getCurrencySymbol(ref.watch(currencyProvider));
 
     return Scaffold(
       appBar: AppBar(
@@ -240,7 +243,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                 ),
                                 trailing: Text(
                                   '${isIncome ? '+' : '-'} '
-                                  'Rs. ${transaction.amount}',
+                                  '$currencySymbol ${transaction.amount}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: isIncome ? Colors.green : Colors.red,

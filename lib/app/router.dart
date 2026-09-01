@@ -100,7 +100,7 @@ class _AppShell extends StatelessWidget {
           NavigationDestination(
             icon: Icon(Icons.bar_chart_outlined),
             selectedIcon: Icon(Icons.bar_chart),
-            label: 'Statistics',
+            label: 'Stats',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

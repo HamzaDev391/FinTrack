@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/currency_helper.dart';
 import '../../../categories/providers/category_providers.dart';
+import '../../../settings/providers/settings_providers.dart';
 
 class TransactionForm extends ConsumerStatefulWidget {
   const TransactionForm({
@@ -150,6 +152,7 @@ class _TransactionFormState extends ConsumerState<TransactionForm> {
     final categoriesAsync = _type == 'expense'
         ? ref.watch(expenseCategoriesProvider)
         : ref.watch(incomeCategoriesProvider);
+    final currencySymbol = getCurrencySymbol(ref.watch(currencyProvider));
 
     return Form(
       key: _formKey,
@@ -211,11 +214,11 @@ class _TransactionFormState extends ConsumerState<TransactionForm> {
             enabled: !_isSaving,
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Amount',
               hintText: 'e.g. 500',
-              prefixText: 'Rs. ',
-              border: OutlineInputBorder(),
+              prefixText: '$currencySymbol ',
+              border: const OutlineInputBorder(),
             ),
             validator: (value) {
               final amount = int.tryParse(value?.trim() ?? '');

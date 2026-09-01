@@ -13,7 +13,20 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(transactions, transactions.currency);
+        await m.alterTable(
+          TableMigration(budgets, newColumns: [budgets.currency]),
+        );
+      }
+    },
+  );
+
   Future<void> clearAllData() async {
     await transaction(() async {
       await delete(budgets).go();

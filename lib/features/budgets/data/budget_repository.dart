@@ -8,12 +8,14 @@ class BudgetRepository {
 
   final AppDatabase _database;
 
-  Future<List<BudgetDetails>> getAllBudgets() async {
+  Future<List<BudgetDetails>> getAllBudgets(String currency) async {
     final budgets =
-        await (_database.select(_database.budgets)..orderBy([
-              (budget) => OrderingTerm.desc(budget.year),
-              (budget) => OrderingTerm.desc(budget.month),
-            ]))
+        await (_database.select(_database.budgets)
+              ..where((budget) => budget.currency.equals(currency))
+              ..orderBy([
+                (budget) => OrderingTerm.desc(budget.year),
+                (budget) => OrderingTerm.desc(budget.month),
+              ]))
             .get();
 
     if (budgets.isEmpty) {
@@ -33,6 +35,7 @@ class BudgetRepository {
         categoryId: budget.categoryId,
         month: budget.month,
         year: budget.year,
+        currency: currency,
       );
 
       result.add(
@@ -50,6 +53,7 @@ class BudgetRepository {
   Future<int> createBudget({
     required int categoryId,
     required int amount,
+    required String currency,
     required int month,
     required int year,
   }) {
@@ -59,6 +63,7 @@ class BudgetRepository {
           BudgetsCompanion.insert(
             categoryId: categoryId,
             amount: amount,
+            currency: Value(currency),
             month: month,
             year: year,
           ),
@@ -97,12 +102,14 @@ class BudgetRepository {
     required int categoryId,
     required int month,
     required int year,
+    required String currency,
   }) async {
     final transactions =
         await (_database.select(_database.transactions)..where(
               (transaction) =>
                   transaction.categoryId.equals(categoryId) &
                   transaction.type.equals('expense') &
+                  transaction.currency.equals(currency) &
                   transaction.date.year.equals(year) &
                   transaction.date.month.equals(month),
             ))

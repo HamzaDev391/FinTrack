@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/currency_helper.dart';
+import '../../settings/providers/settings_providers.dart';
 import '../data/statistics_data.dart';
 import '../providers/statistics_providers.dart';
 
@@ -258,7 +260,7 @@ class _SummaryCards extends StatelessWidget {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
+class _SummaryCard extends ConsumerWidget {
   const _SummaryCard({
     required this.title,
     required this.amount,
@@ -270,7 +272,9 @@ class _SummaryCard extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currencySymbol = getCurrencySymbol(ref.watch(currencyProvider));
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -282,7 +286,7 @@ class _SummaryCard extends StatelessWidget {
             Text(title, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 4),
             Text(
-              'Rs. $amount',
+              '$currencySymbol $amount',
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -397,7 +401,7 @@ class _ExpenseBreakdownCard extends StatelessWidget {
   }
 }
 
-class _LegendItem extends StatelessWidget {
+class _LegendItem extends ConsumerWidget {
   const _LegendItem({
     required this.label,
     required this.amount,
@@ -409,7 +413,9 @@ class _LegendItem extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currencySymbol = getCurrencySymbol(ref.watch(currencyProvider));
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -419,7 +425,7 @@ class _LegendItem extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text('$label: Rs. $amount'),
+        Text('$label: $currencySymbol $amount'),
       ],
     );
   }
@@ -558,13 +564,15 @@ class _MonthlyComparisonCard extends StatelessWidget {
   }
 }
 
-class _CategorySpendingCard extends StatelessWidget {
+class _CategorySpendingCard extends ConsumerWidget {
   const _CategorySpendingCard({required this.statistics});
 
   final StatisticsData statistics;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currencySymbol = getCurrencySymbol(ref.watch(currencyProvider));
+
     if (statistics.categorySpending.isEmpty) {
       return const _EmptyChartCard(
         message: 'No category spending for this period.',
@@ -583,7 +591,7 @@ class _CategorySpendingCard extends StatelessWidget {
               leading: CircleAvatar(child: Text('${index + 1}')),
               title: Text(statistics.categorySpending[index].categoryName),
               trailing: Text(
-                'Rs. ${statistics.categorySpending[index].amount}',
+                '$currencySymbol ${statistics.categorySpending[index].amount}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),

@@ -381,6 +381,18 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('PKR'),
+  );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
@@ -439,6 +451,7 @@ class $TransactionsTable extends Transactions
     id,
     title,
     amount,
+    currency,
     type,
     categoryId,
     date,
@@ -475,6 +488,12 @@ class $TransactionsTable extends Transactions
       );
     } else if (isInserting) {
       context.missing(_amountMeta);
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
     }
     if (data.containsKey('type')) {
       context.handle(
@@ -533,6 +552,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}amount'],
       )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
       type: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}type'],
@@ -566,6 +589,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final int id;
   final String title;
   final int amount;
+  final String currency;
   final String type;
   final int categoryId;
   final DateTime date;
@@ -575,6 +599,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     required this.id,
     required this.title,
     required this.amount,
+    required this.currency,
     required this.type,
     required this.categoryId,
     required this.date,
@@ -587,6 +612,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     map['amount'] = Variable<int>(amount);
+    map['currency'] = Variable<String>(currency);
     map['type'] = Variable<String>(type);
     map['category_id'] = Variable<int>(categoryId);
     map['date'] = Variable<DateTime>(date);
@@ -602,6 +628,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id: Value(id),
       title: Value(title),
       amount: Value(amount),
+      currency: Value(currency),
       type: Value(type),
       categoryId: Value(categoryId),
       date: Value(date),
@@ -619,6 +646,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       amount: serializer.fromJson<int>(json['amount']),
+      currency: serializer.fromJson<String>(json['currency']),
       type: serializer.fromJson<String>(json['type']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
       date: serializer.fromJson<DateTime>(json['date']),
@@ -633,6 +661,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'amount': serializer.toJson<int>(amount),
+      'currency': serializer.toJson<String>(currency),
       'type': serializer.toJson<String>(type),
       'categoryId': serializer.toJson<int>(categoryId),
       'date': serializer.toJson<DateTime>(date),
@@ -645,6 +674,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     int? id,
     String? title,
     int? amount,
+    String? currency,
     String? type,
     int? categoryId,
     DateTime? date,
@@ -654,6 +684,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     id: id ?? this.id,
     title: title ?? this.title,
     amount: amount ?? this.amount,
+    currency: currency ?? this.currency,
     type: type ?? this.type,
     categoryId: categoryId ?? this.categoryId,
     date: date ?? this.date,
@@ -665,6 +696,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
       amount: data.amount.present ? data.amount.value : this.amount,
+      currency: data.currency.present ? data.currency.value : this.currency,
       type: data.type.present ? data.type.value : this.type,
       categoryId: data.categoryId.present
           ? data.categoryId.value
@@ -681,6 +713,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('amount: $amount, ')
+          ..write('currency: $currency, ')
           ..write('type: $type, ')
           ..write('categoryId: $categoryId, ')
           ..write('date: $date, ')
@@ -691,8 +724,17 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, title, amount, type, categoryId, date, note, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    amount,
+    currency,
+    type,
+    categoryId,
+    date,
+    note,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -700,6 +742,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.id == this.id &&
           other.title == this.title &&
           other.amount == this.amount &&
+          other.currency == this.currency &&
           other.type == this.type &&
           other.categoryId == this.categoryId &&
           other.date == this.date &&
@@ -711,6 +754,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<int> id;
   final Value<String> title;
   final Value<int> amount;
+  final Value<String> currency;
   final Value<String> type;
   final Value<int> categoryId;
   final Value<DateTime> date;
@@ -720,6 +764,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.amount = const Value.absent(),
+    this.currency = const Value.absent(),
     this.type = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.date = const Value.absent(),
@@ -730,6 +775,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.id = const Value.absent(),
     required String title,
     required int amount,
+    this.currency = const Value.absent(),
     required String type,
     required int categoryId,
     required DateTime date,
@@ -744,6 +790,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<int>? id,
     Expression<String>? title,
     Expression<int>? amount,
+    Expression<String>? currency,
     Expression<String>? type,
     Expression<int>? categoryId,
     Expression<DateTime>? date,
@@ -754,6 +801,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (amount != null) 'amount': amount,
+      if (currency != null) 'currency': currency,
       if (type != null) 'type': type,
       if (categoryId != null) 'category_id': categoryId,
       if (date != null) 'date': date,
@@ -766,6 +814,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<int>? id,
     Value<String>? title,
     Value<int>? amount,
+    Value<String>? currency,
     Value<String>? type,
     Value<int>? categoryId,
     Value<DateTime>? date,
@@ -776,6 +825,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       id: id ?? this.id,
       title: title ?? this.title,
       amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
       type: type ?? this.type,
       categoryId: categoryId ?? this.categoryId,
       date: date ?? this.date,
@@ -795,6 +845,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     }
     if (amount.present) {
       map['amount'] = Variable<int>(amount.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
     }
     if (type.present) {
       map['type'] = Variable<String>(type.value);
@@ -820,6 +873,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('amount: $amount, ')
+          ..write('currency: $currency, ')
           ..write('type: $type, ')
           ..write('categoryId: $categoryId, ')
           ..write('date: $date, ')
@@ -871,6 +925,18 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('PKR'),
+  );
   static const VerificationMeta _monthMeta = const VerificationMeta('month');
   @override
   late final GeneratedColumn<int> month = GeneratedColumn<int>(
@@ -906,6 +972,7 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     id,
     categoryId,
     amount,
+    currency,
     month,
     year,
     createdAt,
@@ -941,6 +1008,12 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     } else if (isInserting) {
       context.missing(_amountMeta);
     }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    }
     if (data.containsKey('month')) {
       context.handle(
         _monthMeta,
@@ -970,7 +1043,7 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => [
-    {categoryId, month, year},
+    {categoryId, month, year, currency},
   ];
   @override
   Budget map(Map<String, dynamic> data, {String? tablePrefix}) {
@@ -987,6 +1060,10 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
       amount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}amount'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
       )!,
       month: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -1013,6 +1090,7 @@ class Budget extends DataClass implements Insertable<Budget> {
   final int id;
   final int categoryId;
   final int amount;
+  final String currency;
   final int month;
   final int year;
   final DateTime createdAt;
@@ -1020,6 +1098,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     required this.id,
     required this.categoryId,
     required this.amount,
+    required this.currency,
     required this.month,
     required this.year,
     required this.createdAt,
@@ -1030,6 +1109,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     map['id'] = Variable<int>(id);
     map['category_id'] = Variable<int>(categoryId);
     map['amount'] = Variable<int>(amount);
+    map['currency'] = Variable<String>(currency);
     map['month'] = Variable<int>(month);
     map['year'] = Variable<int>(year);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -1041,6 +1121,7 @@ class Budget extends DataClass implements Insertable<Budget> {
       id: Value(id),
       categoryId: Value(categoryId),
       amount: Value(amount),
+      currency: Value(currency),
       month: Value(month),
       year: Value(year),
       createdAt: Value(createdAt),
@@ -1056,6 +1137,7 @@ class Budget extends DataClass implements Insertable<Budget> {
       id: serializer.fromJson<int>(json['id']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
       amount: serializer.fromJson<int>(json['amount']),
+      currency: serializer.fromJson<String>(json['currency']),
       month: serializer.fromJson<int>(json['month']),
       year: serializer.fromJson<int>(json['year']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1068,6 +1150,7 @@ class Budget extends DataClass implements Insertable<Budget> {
       'id': serializer.toJson<int>(id),
       'categoryId': serializer.toJson<int>(categoryId),
       'amount': serializer.toJson<int>(amount),
+      'currency': serializer.toJson<String>(currency),
       'month': serializer.toJson<int>(month),
       'year': serializer.toJson<int>(year),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1078,6 +1161,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     int? id,
     int? categoryId,
     int? amount,
+    String? currency,
     int? month,
     int? year,
     DateTime? createdAt,
@@ -1085,6 +1169,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     id: id ?? this.id,
     categoryId: categoryId ?? this.categoryId,
     amount: amount ?? this.amount,
+    currency: currency ?? this.currency,
     month: month ?? this.month,
     year: year ?? this.year,
     createdAt: createdAt ?? this.createdAt,
@@ -1096,6 +1181,7 @@ class Budget extends DataClass implements Insertable<Budget> {
           ? data.categoryId.value
           : this.categoryId,
       amount: data.amount.present ? data.amount.value : this.amount,
+      currency: data.currency.present ? data.currency.value : this.currency,
       month: data.month.present ? data.month.value : this.month,
       year: data.year.present ? data.year.value : this.year,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -1108,6 +1194,7 @@ class Budget extends DataClass implements Insertable<Budget> {
           ..write('id: $id, ')
           ..write('categoryId: $categoryId, ')
           ..write('amount: $amount, ')
+          ..write('currency: $currency, ')
           ..write('month: $month, ')
           ..write('year: $year, ')
           ..write('createdAt: $createdAt')
@@ -1117,7 +1204,7 @@ class Budget extends DataClass implements Insertable<Budget> {
 
   @override
   int get hashCode =>
-      Object.hash(id, categoryId, amount, month, year, createdAt);
+      Object.hash(id, categoryId, amount, currency, month, year, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1125,6 +1212,7 @@ class Budget extends DataClass implements Insertable<Budget> {
           other.id == this.id &&
           other.categoryId == this.categoryId &&
           other.amount == this.amount &&
+          other.currency == this.currency &&
           other.month == this.month &&
           other.year == this.year &&
           other.createdAt == this.createdAt);
@@ -1134,6 +1222,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   final Value<int> id;
   final Value<int> categoryId;
   final Value<int> amount;
+  final Value<String> currency;
   final Value<int> month;
   final Value<int> year;
   final Value<DateTime> createdAt;
@@ -1141,6 +1230,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     this.id = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.amount = const Value.absent(),
+    this.currency = const Value.absent(),
     this.month = const Value.absent(),
     this.year = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1149,6 +1239,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     this.id = const Value.absent(),
     required int categoryId,
     required int amount,
+    this.currency = const Value.absent(),
     required int month,
     required int year,
     this.createdAt = const Value.absent(),
@@ -1160,6 +1251,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     Expression<int>? id,
     Expression<int>? categoryId,
     Expression<int>? amount,
+    Expression<String>? currency,
     Expression<int>? month,
     Expression<int>? year,
     Expression<DateTime>? createdAt,
@@ -1168,6 +1260,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       if (id != null) 'id': id,
       if (categoryId != null) 'category_id': categoryId,
       if (amount != null) 'amount': amount,
+      if (currency != null) 'currency': currency,
       if (month != null) 'month': month,
       if (year != null) 'year': year,
       if (createdAt != null) 'created_at': createdAt,
@@ -1178,6 +1271,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     Value<int>? id,
     Value<int>? categoryId,
     Value<int>? amount,
+    Value<String>? currency,
     Value<int>? month,
     Value<int>? year,
     Value<DateTime>? createdAt,
@@ -1186,6 +1280,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       id: id ?? this.id,
       categoryId: categoryId ?? this.categoryId,
       amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
       month: month ?? this.month,
       year: year ?? this.year,
       createdAt: createdAt ?? this.createdAt,
@@ -1203,6 +1298,9 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     }
     if (amount.present) {
       map['amount'] = Variable<int>(amount.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
     }
     if (month.present) {
       map['month'] = Variable<int>(month.value);
@@ -1222,6 +1320,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
           ..write('id: $id, ')
           ..write('categoryId: $categoryId, ')
           ..write('amount: $amount, ')
+          ..write('currency: $currency, ')
           ..write('month: $month, ')
           ..write('year: $year, ')
           ..write('createdAt: $createdAt')
@@ -1643,6 +1742,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<int> id,
       required String title,
       required int amount,
+      Value<String> currency,
       required String type,
       required int categoryId,
       required DateTime date,
@@ -1654,6 +1754,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> title,
       Value<int> amount,
+      Value<String> currency,
       Value<String> type,
       Value<int> categoryId,
       Value<DateTime> date,
@@ -1704,6 +1805,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<int> get amount => $composableBuilder(
     column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1775,6 +1881,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get type => $composableBuilder(
     column: $table.type,
     builder: (column) => ColumnOrderings(column),
@@ -1836,6 +1947,9 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<int> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
 
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
@@ -1904,6 +2018,7 @@ class $$TransactionsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<int> amount = const Value.absent(),
+                Value<String> currency = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<int> categoryId = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
@@ -1913,6 +2028,7 @@ class $$TransactionsTableTableManager
                 id: id,
                 title: title,
                 amount: amount,
+                currency: currency,
                 type: type,
                 categoryId: categoryId,
                 date: date,
@@ -1924,6 +2040,7 @@ class $$TransactionsTableTableManager
                 Value<int> id = const Value.absent(),
                 required String title,
                 required int amount,
+                Value<String> currency = const Value.absent(),
                 required String type,
                 required int categoryId,
                 required DateTime date,
@@ -1933,6 +2050,7 @@ class $$TransactionsTableTableManager
                 id: id,
                 title: title,
                 amount: amount,
+                currency: currency,
                 type: type,
                 categoryId: categoryId,
                 date: date,
@@ -2011,6 +2129,7 @@ typedef $$BudgetsTableCreateCompanionBuilder =
       Value<int> id,
       required int categoryId,
       required int amount,
+      Value<String> currency,
       required int month,
       required int year,
       Value<DateTime> createdAt,
@@ -2020,6 +2139,7 @@ typedef $$BudgetsTableUpdateCompanionBuilder =
       Value<int> id,
       Value<int> categoryId,
       Value<int> amount,
+      Value<String> currency,
       Value<int> month,
       Value<int> year,
       Value<DateTime> createdAt,
@@ -2063,6 +2183,11 @@ class $$BudgetsTableFilterComposer
 
   ColumnFilters<int> get amount => $composableBuilder(
     column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2124,6 +2249,11 @@ class $$BudgetsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get month => $composableBuilder(
     column: $table.month,
     builder: (column) => ColumnOrderings(column),
@@ -2177,6 +2307,9 @@ class $$BudgetsTableAnnotationComposer
 
   GeneratedColumn<int> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
 
   GeneratedColumn<int> get month =>
       $composableBuilder(column: $table.month, builder: (column) => column);
@@ -2242,6 +2375,7 @@ class $$BudgetsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int> categoryId = const Value.absent(),
                 Value<int> amount = const Value.absent(),
+                Value<String> currency = const Value.absent(),
                 Value<int> month = const Value.absent(),
                 Value<int> year = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -2249,6 +2383,7 @@ class $$BudgetsTableTableManager
                 id: id,
                 categoryId: categoryId,
                 amount: amount,
+                currency: currency,
                 month: month,
                 year: year,
                 createdAt: createdAt,
@@ -2258,6 +2393,7 @@ class $$BudgetsTableTableManager
                 Value<int> id = const Value.absent(),
                 required int categoryId,
                 required int amount,
+                Value<String> currency = const Value.absent(),
                 required int month,
                 required int year,
                 Value<DateTime> createdAt = const Value.absent(),
@@ -2265,6 +2401,7 @@ class $$BudgetsTableTableManager
                 id: id,
                 categoryId: categoryId,
                 amount: amount,
+                currency: currency,
                 month: month,
                 year: year,
                 createdAt: createdAt,
