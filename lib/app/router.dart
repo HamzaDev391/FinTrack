@@ -65,7 +65,7 @@ class _AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: _BottomNavigationBar(
         selectedIndex: _calculateSelectedIndex(context),
         onDestinationSelected: (index) {
           switch (index) {
@@ -81,33 +81,6 @@ class _AppShell extends StatelessWidget {
               context.go('/settings');
           }
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Transactions',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Budgets',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart),
-            label: 'Stats',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
       ),
     );
   }
@@ -132,5 +105,134 @@ class _AppShell extends StatelessWidget {
     }
 
     return 0;
+  }
+}
+
+class _BottomNavigationBar extends StatelessWidget {
+  const _BottomNavigationBar({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        child: SizedBox(
+          height: 80,
+          child: Row(
+            children: [
+              _BottomNavigationItem(
+                flex: 2,
+                label: 'Home',
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home,
+                isSelected: selectedIndex == 0,
+                onTap: () => onDestinationSelected(0),
+              ),
+              _BottomNavigationItem(
+                flex: 5,
+                label: 'Transactions',
+                icon: Icons.receipt_long_outlined,
+                selectedIcon: Icons.receipt_long,
+                isSelected: selectedIndex == 1,
+                onTap: () => onDestinationSelected(1),
+              ),
+              _BottomNavigationItem(
+                flex: 3,
+                label: 'Budgets',
+                icon: Icons.account_balance_wallet_outlined,
+                selectedIcon: Icons.account_balance_wallet,
+                isSelected: selectedIndex == 2,
+                onTap: () => onDestinationSelected(2),
+              ),
+              _BottomNavigationItem(
+                flex: 4,
+                label: 'Statistics',
+                icon: Icons.bar_chart_outlined,
+                selectedIcon: Icons.bar_chart,
+                isSelected: selectedIndex == 3,
+                onTap: () => onDestinationSelected(3),
+              ),
+              _BottomNavigationItem(
+                flex: 3,
+                label: 'Settings',
+                icon: Icons.settings_outlined,
+                selectedIcon: Icons.settings,
+                isSelected: selectedIndex == 4,
+                onTap: () => onDestinationSelected(4),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavigationItem extends StatelessWidget {
+  const _BottomNavigationItem({
+    required this.flex,
+    required this.label,
+    required this.icon,
+    required this.selectedIcon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final int flex;
+  final String label;
+  final IconData icon;
+  final IconData selectedIcon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final foregroundColor = isSelected
+        ? colorScheme.onSecondaryContainer
+        : colorScheme.onSurfaceVariant;
+
+    return Expanded(
+      flex: flex,
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  NavigationIndicator(
+                    animation: AlwaysStoppedAnimation(isSelected ? 1 : 0),
+                    color: colorScheme.secondaryContainer,
+                  ),
+                  Icon(
+                    isSelected ? selectedIcon : icon,
+                    color: foregroundColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: foregroundColor),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
